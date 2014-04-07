@@ -25,9 +25,13 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
 /**
  * @author shahbaz
  */
-public class ClientNettyOIO {
+public class ClientNettyOIO extends AbstractNettyClient{
 
-    /**
+    public ClientNettyOIO() {
+		super("Netty OIO");
+	}
+
+	/**
      * Connect to server using Netty's non-NIO client.
      * @param bufferSize
      * @param TCP_NO_DELAY
@@ -36,7 +40,6 @@ public class ClientNettyOIO {
      * @throws java.net.UnknownHostException
      */
     Map<String,String> run(int PORT, int bufferSize, boolean TCP_NO_DELAY) throws IOException, UnknownHostException {
-        final Parser p = new Parser("Netty OIO");
 
         ChannelFactory factory = new OioClientSocketChannelFactory(Executors.newCachedThreadPool());
 
@@ -62,14 +65,14 @@ public class ClientNettyOIO {
                             @Override
                             public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
                                 ChannelBuffer buf = (ChannelBuffer) e.getMessage();
-                                p.process(buf);
+                                process(buf);
                             }
 
                             @Override
                             public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
                                 e.getCause().printStackTrace();
                                 e.getChannel().close();
-                                p.endTimer();
+                                endTimer();
                             }
                         });
             }
@@ -77,7 +80,7 @@ public class ClientNettyOIO {
 
         bootstrap.setOption("tcpNoDelay", TCP_NO_DELAY);
 
-        p.startTimer();
+        startTimer();
         ChannelFuture future = bootstrap.connect(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
         future.awaitUninterruptibly();
         if (!future.isSuccess()) {
@@ -85,12 +88,12 @@ public class ClientNettyOIO {
         }
         future.getChannel().getCloseFuture().awaitUninterruptibly();
         factory.releaseExternalResources();
-        p.endTimer();
+        endTimer();
 
 
-        Map<String,String> res = p.getResults();
+        Map<String,String> res = getResults();
         res.put("TCP_NO_DELAY", Boolean.toString(TCP_NO_DELAY));
-        res.put("BUFFER_SIZE", Parser.df.format(0));
+        res.put("BUFFER_SIZE", df.format(0));
         return res;
     }
 }

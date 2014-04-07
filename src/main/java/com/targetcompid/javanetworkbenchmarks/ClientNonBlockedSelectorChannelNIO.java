@@ -15,9 +15,13 @@ import java.util.Map;
 /**
  * @author shahbaz
  */
-public class ClientNonBlockedSelectorChannel {
+public class ClientNonBlockedSelectorChannelNIO extends AbstractNIOClient{
 
-    /**
+    public ClientNonBlockedSelectorChannelNIO() {
+		super("NIO Non-Blocked Selector Channel");
+	}
+
+	/**
      * Connect to server using NIO selectors. Most people wouldn't do this for client connections. Selectors are supposed to
      * be used by highly scalable servers.
      * @param bufferSize
@@ -27,7 +31,6 @@ public class ClientNonBlockedSelectorChannel {
      * @throws java.net.UnknownHostException
      */
     Map<String,String> run(int PORT, int bufferSize, boolean TCP_NO_DELAY) throws IOException, UnknownHostException {
-        final Parser p = new Parser("NIO Non-Blocked Selector Channel");
 
         Selector selector = Selector.open();
 
@@ -40,7 +43,7 @@ public class ClientNonBlockedSelectorChannel {
         ByteBuffer data = ByteBuffer.allocate(bufferSize);
         int size = 0;
         channel.finishConnect();
-        p.startTimer();
+        startTimer();
 
         try{
             while(true){
@@ -56,14 +59,14 @@ public class ClientNonBlockedSelectorChannel {
                         size = ((SocketChannel)key.channel()).read(data);
                         if(size != -1){
                             data.flip();
-                            p.process(size, data);
+                            process(size, data);
                             data.clear();
                         }
                         else{
-                            p.endTimer();
-                            Map<String,String> res = p.getResults();
+                            endTimer();
+                            Map<String,String> res = getResults();
                             res.put("TCP_NO_DELAY", Boolean.toString(TCP_NO_DELAY));
-                            res.put("BUFFER_SIZE", Parser.df.format(bufferSize));
+                            res.put("BUFFER_SIZE", df.format(bufferSize));
                             return res;
                         }
                     }
@@ -78,9 +81,9 @@ public class ClientNonBlockedSelectorChannel {
         }
 
         //never called
-        Map<String,String> res = p.getResults();
+        Map<String,String> res = getResults();
         res.put("TCP_NO_DELAY", Boolean.toString(TCP_NO_DELAY));
-        res.put("BUFFER_SIZE", Parser.df.format(bufferSize));
+        res.put("BUFFER_SIZE", df.format(bufferSize));
         return res;
     }
 }

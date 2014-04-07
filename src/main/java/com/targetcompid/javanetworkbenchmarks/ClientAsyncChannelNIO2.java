@@ -16,9 +16,13 @@ import java.util.concurrent.Future;
 /**
  * @author shahbaz
  */
-public class ClientAsyncChannel {
+public class ClientAsyncChannelNIO2 extends AbstractNIOClient{
 
-    /**
+    public ClientAsyncChannelNIO2() {
+		super("NIO2 Async");
+	}
+
+	/**
      * NIO2 way of connecting to servers. Poor documentation and few blogs showing how to do it right. Combines the complexity
      * of ByteBuffers, async programming and recursive calls. CRUD/JDBC developers should think twice before using this
      * instead of basic stream.
@@ -31,7 +35,6 @@ public class ClientAsyncChannel {
      * @throws ExecutionException
      */
     Map<String,String> run(int PORT, int bufferSize, boolean TCP_NO_DELAY) throws IOException, UnknownHostException, InterruptedException, ExecutionException {
-        final Parser p = new Parser("NIO2 Async");
         final CountDownLatch latch = new CountDownLatch(1);
 
         final AsynchronousSocketChannel channel = AsynchronousSocketChannel.open();
@@ -42,7 +45,7 @@ public class ClientAsyncChannel {
         final ByteBuffer data = ByteBuffer.allocate(bufferSize);
 
         try{
-            p.startTimer();
+            startTimer();
             channel.read(data, null, new CompletionHandler<Integer, Void>() {
 
                 @Override
@@ -51,12 +54,12 @@ public class ClientAsyncChannel {
 
                     if(size != -1){
                         data.flip();
-                        p.process(size, data);
+                        process(size, data);
                         data.clear();
                         channel.read(data,null,this);
                     }
                     else{
-                        p.endTimer();
+                        endTimer();
                         latch.countDown();
                     }
                 }
@@ -72,9 +75,9 @@ public class ClientAsyncChannel {
         finally{
             channel.close();
         }
-        Map<String,String> res = p.getResults();
+        Map<String,String> res = getResults();
         res.put("TCP_NO_DELAY", Boolean.toString(TCP_NO_DELAY));
-        res.put("BUFFER_SIZE", Parser.df.format(bufferSize));
+        res.put("BUFFER_SIZE", df.format(bufferSize));
         return res;
     }
 }

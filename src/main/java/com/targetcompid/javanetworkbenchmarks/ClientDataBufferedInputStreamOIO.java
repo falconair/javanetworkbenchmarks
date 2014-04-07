@@ -11,9 +11,13 @@ import java.util.Map;
 /**
  * @author shahbaz
  */
-public class ClientDataBufferedInputStream {
+public class ClientDataBufferedInputStreamOIO extends AbstractDataInputStreamClientOIO{
 
-    /**
+    public ClientDataBufferedInputStreamOIO() {
+		super("OIO DataBufferedInputStream");
+	}
+
+	/**
      * Connect to server using DataInputStream with a buffer. Most obvious solution for someone who thinks about throughput.
      * @param bufferSize
      * @param TCP_NO_DELAY
@@ -22,23 +26,22 @@ public class ClientDataBufferedInputStream {
      * @throws java.net.UnknownHostException
      */
     Map<String,String> run(int PORT, int bufferSize, boolean TCP_NO_DELAY) throws IOException, UnknownHostException {
-        Parser p = new Parser("OIO DataBufferedInputStream");
 
         Socket client = new Socket(InetAddress.getLocalHost(), PORT);
         client.setTcpNoDelay(TCP_NO_DELAY);
         DataInputStream in = new DataInputStream(new BufferedInputStream(client.getInputStream(),bufferSize));
 
         try{
-            p.startTimer();
-            p.process(in);
-            p.endTimer();
+            startTimer();
+            process(in);
+            endTimer();
         }
         finally{
             client.close();
         }
-        Map<String,String> res = p.getResults();
+        Map<String,String> res = getResults();
         res.put("TCP_NO_DELAY", Boolean.toString(TCP_NO_DELAY));
-        res.put("BUFFER_SIZE", Parser.df.format(bufferSize));
+        res.put("BUFFER_SIZE", df.format(bufferSize));
         return res;
     }
 }

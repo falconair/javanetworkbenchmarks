@@ -12,10 +12,15 @@ import java.util.Map;
 /**
  * @author shahbaz
  */
-public class ClientBlockedChannel {
+public class ClientBusySpinChannelNIO extends AbstractNIOClient{
 
-    /**
-     * Connect to server using NIO channels. However, someone using NIO isn't likely to fall back to blocking sockets.
+    public ClientBusySpinChannelNIO() {
+		super("NIO Non-Blocked Spinning Channel");
+	}
+
+	/**
+     * Connect to server using NIO sockets, but instead of blocking, simply spin in a loop. Polling on steroids, which means
+     * it probably isn't a good idea, unless you REALLY want to win.
      * @param bufferSize
      * @param TCP_NO_DELAY
      * @return
@@ -23,31 +28,34 @@ public class ClientBlockedChannel {
      * @throws java.net.UnknownHostException
      */
     Map<String,String> run(int PORT, int bufferSize, boolean TCP_NO_DELAY) throws IOException, UnknownHostException {
-        Parser p = new Parser("NIO Blocked Channel");
 
         SocketChannel channel = SocketChannel.open();
         channel.setOption(StandardSocketOptions.TCP_NODELAY,TCP_NO_DELAY);
+        channel.configureBlocking(false);
         channel.connect(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
+        channel.finishConnect();
 
         ByteBuffer data = ByteBuffer.allocate(bufferSize);
         int size = 0;
 
         try{
-            p.startTimer();
+            startTimer();
             while(-1 != (size = channel.read(data))){
-                data.flip();
-                p.process(size, data);
-                data.clear();
+                if(size != 0){
+                    data.flip();
+                    process(size, data);
+                    data.clear();
+                }
             }
-            p.endTimer();
+            endTimer();
             //System.out.println(p);
         }
         finally{
             channel.close();
         }
-        Map<String,String> res = p.getResults();
+        Map<String,String> res = getResults();
         res.put("TCP_NO_DELAY", Boolean.toString(TCP_NO_DELAY));
-        res.put("BUFFER_SIZE", Parser.df.format(bufferSize));
+        res.put("BUFFER_SIZE", df.format(bufferSize));
         return res;
     }
 }
