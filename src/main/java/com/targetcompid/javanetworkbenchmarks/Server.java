@@ -33,6 +33,7 @@ public class Server {
         try{
             //Keep sending data until client ends connection
             for (int i = 0; i < Long.MAX_VALUE; i++) {
+            	out.println(counter);
                 serverout.writeLong(counter);
                 serverout.writeLong(System.nanoTime());
                 counter++;
@@ -43,6 +44,7 @@ public class Server {
         }
         finally{
             c1.close();
+            server.close();
         }
 
         //Return counter to avoid optimizers from being too aggressive

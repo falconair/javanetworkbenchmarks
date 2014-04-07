@@ -10,9 +10,9 @@ import java.util.Map;
 /**
  * @author shahbaz
  */
-public class ClientDataInputStream extends AbstractDataInputStreamClientOIO{
+public class ClientDataInputStreamOIO extends AbstractDataInputStreamClientOIO{
 
-    public ClientDataInputStream() {
+    public ClientDataInputStreamOIO() {
 		super("OIO DataInputStream");
 	}
 
