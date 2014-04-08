@@ -22,6 +22,7 @@ public abstract class AbstractInputStreamClientOIO extends AbstractClient{
 			size = input.read(internalBuffer, 0, 8);
 			if(size == -1) break;
 			long remoteCounter = Util.toLong(internalBuffer);
+			//out.println("Client counter:"+remoteCounter+", time:"+remoteTS);
 			
 			if(remoteCounter != counter){
 				String error = "Expected remote counter to be "+counter+" but it was actually "+remoteCounter;

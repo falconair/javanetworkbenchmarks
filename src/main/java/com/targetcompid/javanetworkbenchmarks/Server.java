@@ -15,15 +15,16 @@ import java.net.SocketException;
  *
  */
 public class Server {
+	
+	//private final long MAX_VALUE = 1000000;
+	private final long MAX_VALUE = 10000;
 
     public long run(int PORT) throws IOException {
         final ServerSocket server = new ServerSocket(PORT);
-        out.println("TCP socket server started");
 
         //Accept single connection for this test
         final Socket c1 = server.accept();
         c1.setTcpNoDelay(true);
-        out.println("Client connected");
 
         long counter = 0;
         DataOutputStream serverout;
@@ -32,10 +33,11 @@ public class Server {
 
         try{
             //Keep sending data until client ends connection
-            for (int i = 0; i < Long.MAX_VALUE; i++) {
-            	out.println(counter);
+            for (int i = 0; i < MAX_VALUE; i++) {
+            	long nanoTime = System.nanoTime();
+            	//out.println("Server counter:"+counter+", time:"+nanoTime);
+                serverout.writeLong(nanoTime);
                 serverout.writeLong(counter);
-                serverout.writeLong(System.nanoTime());
                 counter++;
             }
         }
